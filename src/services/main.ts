@@ -5,7 +5,14 @@ export interface CreateReportData {
   title: string;
   startDate: string | null;
   endDate: string | null;
-  reportContent: unknown;
+  reportContent: any;
+  extractedData: {
+    total_pages: number;
+    pages: {
+      pageNumber: number;
+      content: string;
+    }[];
+  };
 }
 
 export class MainService {

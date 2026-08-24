@@ -6,9 +6,21 @@ export interface CreateReportData {
   startDate: string | null;
   endDate: string | null;
   reportContent: unknown;
+
+  extractedData: {
+    total_pages: number;
+    pages: {
+      pageNumber: number;
+      content: string;
+    }[];
+  };
 }
 
 export class MainRepository {
+  // ==========================================
+  // CREATE REPORT
+  // ==========================================
+
   async createReport(data: CreateReportData) {
     const result = await pool.query(
       `
@@ -17,30 +29,28 @@ export class MainRepository {
         title,
         start_date,
         end_date,
-        report_content
-      )
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING
-        report_id,
-        user_id,
-        title,
-        start_date,
-        end_date,
         report_content,
-        status,
-        created_at
+        extracted_data
+      )
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING *
       `,
       [
         data.userId,
         data.title,
         data.startDate,
         data.endDate,
-        data.reportContent,
+        JSON.stringify(data.reportContent),
+        JSON.stringify(data.extractedData),
       ],
     );
 
     return result.rows[0];
   }
+
+  // ==========================================
+  // GET ALL REPORTS
+  // ==========================================
 
   async getReportsByUser(userId: number) {
     const result = await pool.query(
@@ -52,6 +62,7 @@ export class MainRepository {
         start_date,
         end_date,
         report_content,
+        extracted_data,
         status,
         created_at
       FROM contract_reports
@@ -65,6 +76,10 @@ export class MainRepository {
     return result.rows;
   }
 
+  // ==========================================
+  // GET SINGLE REPORT
+  // ==========================================
+
   async getReportById(reportId: number, userId: number) {
     const result = await pool.query(
       `
@@ -75,6 +90,7 @@ export class MainRepository {
         start_date,
         end_date,
         report_content,
+        extracted_data,
         status,
         created_at
       FROM contract_reports
@@ -88,6 +104,10 @@ export class MainRepository {
 
     return result.rows[0] ?? null;
   }
+
+  // ==========================================
+  // CLOSE REPORT
+  // ==========================================
 
   async closeReport(reportId: number, userId: number) {
     const result = await pool.query(
@@ -104,6 +124,7 @@ export class MainRepository {
         start_date,
         end_date,
         report_content,
+        extracted_data,
         status,
         created_at
       `,
@@ -112,6 +133,10 @@ export class MainRepository {
 
     return result.rows[0] ?? null;
   }
+
+  // ==========================================
+  // RESTORE REPORT
+  // ==========================================
 
   async restoreReport(reportId: number, userId: number) {
     const result = await pool.query(
@@ -128,6 +153,7 @@ export class MainRepository {
         start_date,
         end_date,
         report_content,
+        extracted_data,
         status,
         created_at
       `,
@@ -136,6 +162,10 @@ export class MainRepository {
 
     return result.rows[0] ?? null;
   }
+
+  // ==========================================
+  // DELETE REPORT
+  // ==========================================
 
   async deleteReport(reportId: number, userId: number) {
     const result = await pool.query(
@@ -151,6 +181,8 @@ export class MainRepository {
         title,
         start_date,
         end_date,
+        report_content,
+        extracted_data,
         status,
         created_at
       `,

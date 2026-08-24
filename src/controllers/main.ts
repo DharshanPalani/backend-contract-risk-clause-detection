@@ -44,11 +44,19 @@ export class MainController {
     try {
       const userId = (request.user as any).userId;
 
+      // ------------------------------------------
+      // Extract PDF text page-by-page
+      // ------------------------------------------
+
       const extracted = await this.extractorService.extractPDF(file.buffer);
 
       const contractText = extracted.pages
         .map((page) => `--- Page ${page.pageNumber} ---\n${page.content}`)
         .join("\n\n");
+
+      // ------------------------------------------
+      // Send extracted text to LLM
+      // ------------------------------------------
 
       const USE_LLM = process.env.DEV_MODE;
 
@@ -65,6 +73,10 @@ export class MainController {
 
       console.log("PARSED RESULT:", result);
 
+      // ------------------------------------------
+      // Store report + raw extraction separately
+      // ------------------------------------------
+
       const report = await this.mainService.createReport({
         userId,
 
@@ -74,7 +86,18 @@ export class MainController {
 
         endDate: result.endDate ?? null,
 
+        // LLM analysis only
         reportContent: result.report,
+
+        // Raw PDF extraction
+        extractedData: {
+          total_pages: extracted.totalPages,
+
+          pages: extracted.pages.map((page) => ({
+            pageNumber: page.pageNumber,
+            content: page.content,
+          })),
+        },
       });
 
       return response.status(201).json({
