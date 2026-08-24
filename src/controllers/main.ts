@@ -1,9 +1,10 @@
-import type { Request, Response } from "express";
+import type { Response } from "express";
 import multer from "multer";
 import { ExtractorService } from "../services/extractor.js";
 import { LLMService } from "../services/llm.js";
 import { template_data } from "../template_data.js";
 import { MainService } from "../services/main.js";
+import type { AuthenticatedRequest } from "../middleware/auth.js";
 
 export class MainController {
   public upload = multer({
@@ -24,7 +25,17 @@ export class MainController {
   private llmService = new LLMService();
   private mainService = new MainService();
 
-  async review(request: Request, response: Response) {
+  async review(request: AuthenticatedRequest, response: Response) {
+    // requireAuth middleware should have populated this
+    const userId = request.userId;
+
+    if (!userId) {
+      return response.status(401).json({
+        status: "error",
+        message: "Not authenticated",
+      });
+    }
+
     const file = request.file;
 
     if (!file) {
@@ -50,16 +61,13 @@ export class MainController {
       } else {
         const llmResult = await this.llmService.callLLM(contractText);
 
-        // LLM returns JSON as a string
         result =
           typeof llmResult === "string" ? JSON.parse(llmResult) : llmResult;
       }
 
       console.log("PARSED RESULT:", result);
 
-      // Hardcoded user ID for now
-      const userId = 1;
-
+      // Save report for the authenticated user
       const report = await this.mainService.createReport({
         userId,
         title: result.title,
