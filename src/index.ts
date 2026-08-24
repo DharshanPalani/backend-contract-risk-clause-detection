@@ -10,7 +10,7 @@ dotenv.config();
 
 const app = express();
 
-app.use("/api", mainRouter);
+// app.use("/api", mainRouter);
 
 app.get("/", (_request: Request, response: Response) => {
   response.send("Hello son!! 67");
