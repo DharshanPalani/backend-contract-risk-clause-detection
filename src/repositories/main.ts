@@ -55,21 +55,21 @@ export class MainRepository {
   async getReportsByUser(userId: number) {
     const result = await pool.query(
       `
-      SELECT
-        report_id,
-        user_id,
-        title,
-        start_date,
-        end_date,
-        report_content,
-        extracted_data,
-        status,
-        created_at
-      FROM contract_reports
-      WHERE user_id = $1
-        AND status != 'deleted'
-      ORDER BY created_at DESC
-      `,
+    SELECT
+      report_id,
+      user_id,
+      title,
+      start_date,
+      end_date,
+      report_content,
+      extracted_data,
+      status,
+      created_at
+    FROM contract_reports
+    WHERE user_id = $1
+      AND status != 'deleted'
+    ORDER BY created_at DESC
+    `,
       [userId],
     );
 
