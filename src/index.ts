@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import type { Request, Response } from "express";
 import mainRouter from "./routes/main.js";
+import authRouter from "./routes/auth.js";
 
 dotenv.config();
 
@@ -15,6 +16,8 @@ app.use(
 );
 
 app.use("/api", mainRouter);
+
+app.use("/auth", authRouter);
 
 app.get("/", (_request: Request, response: Response) => {
   response.send("Hello son!! 67");
