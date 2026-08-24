@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { Response } from "express";
+import type { Request, Response } from "express";
 // import { MainController } from "../controllers/main.js";
 
 const mainRouter = Router();
@@ -11,7 +11,7 @@ const mainRouter = Router();
 //   mainController.review.bind(mainController),
 // );
 
-mainRouter.get("/hello", (response: Response) => {
+mainRouter.get("/hello", (_request: Request, response: Response) => {
   response.send("Yoo");
 });
 
