@@ -48,27 +48,25 @@ export class AuthController {
 
           const code = await this.oauthService.createAuthCode(dbUser.user_id);
 
-          return response.redirect(
-            `${process.env.FRONTEND_URL ?? "http://localhost:5173"}/callback?code=${encodeURIComponent(code)}`,
-          );
+          const frontendUrl =
+            process.env.FRONTEND_URL ?? "http://localhost:5173";
 
-          return response.status(200).json({
-            status: "good",
-            user: dbUser,
-          });
+          return response.redirect(
+            `${frontendUrl}/callback?code=${encodeURIComponent(code)}`,
+          );
         } catch (error) {
-          console.error("Database error:", error);
+          console.error("Authentication error:", error);
 
           return response.status(500).json({
             status: "error",
-            message: "Failed to create user",
+            message: "Authentication failed",
           });
         }
       },
     )(request, response, next);
   };
 
-  async verify(request: Request, response: Response) {
+  verify = async (request: Request, response: Response) => {
     const { code } = request.body;
 
     if (!code || typeof code !== "string") {
@@ -78,18 +76,28 @@ export class AuthController {
       });
     }
 
-    const userId = await this.oauthService.verifyAuthCode(code);
+    try {
+      const userId = await this.oauthService.verifyAuthCode(code);
 
-    if (!userId) {
-      return response.status(401).json({
+      if (!userId) {
+        return response.status(401).json({
+          status: "error",
+          message: "Invalid or expired code",
+        });
+      }
+
+      // Temporary until JWT/session implementation
+      return response.status(200).json({
+        status: "good",
+        user_id: userId,
+      });
+    } catch (error) {
+      console.error("OAuth verification error:", error);
+
+      return response.status(500).json({
         status: "error",
-        message: "Invalid or expired code",
+        message: "Authentication verification failed",
       });
     }
-
-    return response.status(200).json({
-      status: "good",
-      user_id: userId,
-    });
-  }
+  };
 }
