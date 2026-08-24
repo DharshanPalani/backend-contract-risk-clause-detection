@@ -19,6 +19,7 @@
   "type": "module",
   "dependencies": {
     "@napi-rs/canvas": "^1.0.8",
+    "@types/cors": "^2.8.19",
     "@types/multer": "^2.2.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
