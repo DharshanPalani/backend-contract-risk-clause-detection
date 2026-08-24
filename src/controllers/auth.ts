@@ -3,6 +3,13 @@ import passport from "passport";
 
 export class AuthController {
   googleAuth = (request: Request, response: Response, next: NextFunction) => {
+    console.log("GOOGLE_CLIENT_ID exists:", !!process.env.GOOGLE_CLIENT_ID);
+    console.log(
+      "GOOGLE_CLIENT_SECRET exists:",
+      !!process.env.GOOGLE_CLIENT_SECRET,
+    );
+    console.log("CALLBACK_URL:", process.env.CALLBACK_URL);
+
     passport.authenticate("google", {
       scope: ["profile", "email"],
       session: false,
