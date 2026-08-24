@@ -177,4 +177,18 @@ export class AuthController {
       });
     }
   };
+
+  logout = async (_request: Request, response: Response) => {
+    response.clearCookie("auth_token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
+    });
+
+    return response.status(200).json({
+      status: "good",
+      message: "Logged out",
+    });
+  };
 }
