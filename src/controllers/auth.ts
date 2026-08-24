@@ -1,9 +1,11 @@
 import type { Request, Response, NextFunction } from "express";
 import passport from "passport";
 import { UserService } from "../services/user.js";
+import { OAuthService } from "../services/oauth.js";
 
 export class AuthController {
   private userService = new UserService();
+  private oauthService = new OAuthService();
 
   googleAuth = (request: Request, response: Response, next: NextFunction) => {
     passport.authenticate("google", {
@@ -44,7 +46,7 @@ export class AuthController {
             name: user.name,
           });
 
-          const code = 1234;
+          const code = await this.oauthService.createAuthCode(dbUser.user_id);
 
           return response.redirect(
             `${process.env.FRONTEND_URL ?? "http://localhost:5173"}/callback?code=${encodeURIComponent(code)}`,

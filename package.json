@@ -23,6 +23,7 @@
     "@types/multer": "^2.2.0",
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.17",
+    "@upstash/redis": "^1.38.2",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
