@@ -83,22 +83,22 @@ export class MainRepository {
   async getReportById(reportId: number, userId: number) {
     const result = await pool.query(
       `
-      SELECT
-        report_id,
-        user_id,
-        title,
-        start_date,
-        end_date,
-        report_content,
-        extracted_data,
-        status,
-        created_at
-      FROM contract_reports
-      WHERE report_id = $1
-        AND user_id = $2
-        AND status != 'deleted'
-      LIMIT 1
-      `,
+    SELECT
+      report_id,
+      user_id,
+      title,
+      start_date,
+      end_date,
+      report_content,
+      extracted_data,
+      status,
+      created_at
+    FROM contract_reports
+    WHERE report_id = $1
+      AND user_id = $2
+      AND status != 'deleted'
+    LIMIT 1
+    `,
       [reportId, userId],
     );
 

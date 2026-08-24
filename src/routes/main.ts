@@ -13,6 +13,11 @@ mainRouter.post(
   mainController.review.bind(mainController),
 );
 
+mainRouter.post(
+  "/reports/:reportId/highlights",
+  mainController.generateHighlights.bind(mainController),
+);
+
 mainRouter.get(
   "/reports",
   requireAuth,

@@ -139,6 +139,49 @@ export class MainController {
   }
 
   // ==========================================
+  // POST /api/reports/:reportId/highlights
+  // ==========================================
+
+  async generateHighlights(request: Request, response: Response) {
+    try {
+      const userId = (request.user as any).userId;
+
+      const reportId = Number(request.params.reportId);
+
+      if (!Number.isInteger(reportId)) {
+        return response.status(400).json({
+          status: "error",
+          message: "Invalid report ID",
+        });
+      }
+
+      const highlights = await this.mainService.generateReportHighlights(
+        reportId,
+        userId,
+      );
+
+      if (!highlights) {
+        return response.status(404).json({
+          status: "error",
+          message: "Report not found",
+        });
+      }
+
+      return response.status(200).json({
+        status: "good",
+        ...highlights,
+      });
+    } catch (error) {
+      console.error("Generate highlights error:", error);
+
+      return response.status(500).json({
+        status: "error",
+        message: "Failed to generate highlights",
+      });
+    }
+  }
+
+  // ==========================================
   // GET /api/reports/:reportId
   // ==========================================
 

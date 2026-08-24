@@ -1,5 +1,8 @@
 import { LLM_prompt } from "../prompt.js";
 
+import { HIGHLIGHT_PROMPT } from "../highlight_prompt.js";
+import type { HighlightResponse } from "../types/highlight.js";
+
 export class LLMService {
   async callLLM(data: string) {
     const prompt = `
@@ -62,5 +65,26 @@ ${data}
 
       throw new Error("DeepSeek returned invalid JSON");
     }
+  }
+
+  async generateHighlights(
+    pages: {
+      pageNumber: number;
+      content: string;
+    }[],
+  ): Promise<HighlightResponse> {
+    const pageText = pages
+      .map((page) => `--- Page ${page.pageNumber} ---\n${page.content}`)
+      .join("\n\n");
+
+    const prompt = `${HIGHLIGHT_PROMPT}
+
+${pageText}`;
+
+    const result = await this.callLLM(prompt);
+
+    const parsed = typeof result === "string" ? JSON.parse(result) : result;
+
+    return parsed as HighlightResponse;
   }
 }
