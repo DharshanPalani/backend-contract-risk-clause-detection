@@ -2,7 +2,7 @@
   "name": "backend-contract-risk-clause-detection",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.ts",
+  "main": "index.js",
   "scripts": {
     "dev": "nodemon --exec tsx src/scripts/localDev.ts",
     "build": "tsc && tsc-alias",
