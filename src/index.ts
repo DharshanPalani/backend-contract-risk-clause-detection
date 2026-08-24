@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 
 import type { Request, Response } from "express";
 
-import mainRouter from "./routes/main.js";
+// import mainRouter from "./routes/main.js";
 
 dotenv.config();
 
