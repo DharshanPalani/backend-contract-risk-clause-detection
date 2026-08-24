@@ -1,7 +1,7 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
 import { MainController } from "../controllers/main.js";
-import { requireAuth } from "../config/authMiddleware.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const mainRouter = Router();
 const mainController = new MainController();
