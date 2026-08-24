@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-import mainRouter from "./routes/main.js";
+// import mainRouter from "./routes/main.js";
 import authRouter from "./routes/auth.js";
 import "./auth/passportSetup.js";
 
