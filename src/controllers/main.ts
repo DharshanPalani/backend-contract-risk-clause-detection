@@ -18,31 +18,31 @@ export class MainController {
     },
   });
 
-  // private extractorService = new ExtractorService();
-  // private llmService = new LLMService();
+  private extractorService = new ExtractorService();
+  private llmService = new LLMService();
 
   async review(request: Request, response: Response) {
-    // const file = request.file;
+    const file = request.file;
 
-    // if (!file) {
-    //   return response.status(400).json({
-    //     error: "PDF file is required",
-    //   });
-    // }
+    if (!file) {
+      return response.status(400).json({
+        error: "PDF file is required",
+      });
+    }
 
-    // const extracted = await this.extractorService.extractPDF(file.buffer);
+    const extracted = await this.extractorService.extractPDF(file.buffer);
 
-    // const contractText = extracted.pages
-    //   .map((page) => `--- Page ${page.pageNumber} ---\n${page.content}`)
-    //   .join("\n\n");
+    const contractText = extracted.pages
+      .map((page) => `--- Page ${page.pageNumber} ---\n${page.content}`)
+      .join("\n\n");
 
-    // // console.log(contractText);
+    // console.log(contractText);
 
-    // // return response.status(201).send("DONE!");
+    // return response.status(201).send("DONE!");
 
-    // const result = await this.llmService.callLLM(contractText);
+    const result = await this.llmService.callLLM(contractText);
 
-    // return response.json(result);
+    return response.json(result);
 
     return response.status(201).send("work");
   }
