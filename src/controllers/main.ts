@@ -89,4 +89,74 @@ export class MainController {
       });
     }
   }
+
+  async getReports(request: AuthenticatedRequest, response: Response) {
+    const userId = request.userId;
+
+    if (!userId) {
+      return response.status(401).json({
+        status: "error",
+        message: "Not authenticated",
+      });
+    }
+
+    try {
+      const reports = await this.mainService.getUserReports(userId);
+
+      return response.status(200).json({
+        status: "good",
+        reports,
+      });
+    } catch (error) {
+      console.error("Get reports error:", error);
+
+      return response.status(500).json({
+        status: "error",
+        message: "Failed to retrieve reports",
+      });
+    }
+  }
+
+  async getReport(request: AuthenticatedRequest, response: Response) {
+    const userId = request.userId;
+
+    if (!userId) {
+      return response.status(401).json({
+        status: "error",
+        message: "Not authenticated",
+      });
+    }
+
+    const reportId = Number(request.params.reportId);
+
+    if (!Number.isInteger(reportId)) {
+      return response.status(400).json({
+        status: "error",
+        message: "Invalid report ID",
+      });
+    }
+
+    try {
+      const report = await this.mainService.getReport(reportId, userId);
+
+      if (!report) {
+        return response.status(404).json({
+          status: "error",
+          message: "Report not found",
+        });
+      }
+
+      return response.status(200).json({
+        status: "good",
+        report,
+      });
+    } catch (error) {
+      console.error("Get report error:", error);
+
+      return response.status(500).json({
+        status: "error",
+        message: "Failed to retrieve report",
+      });
+    }
+  }
 }

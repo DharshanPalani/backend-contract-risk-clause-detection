@@ -1,9 +1,9 @@
 import { Router } from "express";
-import type { Request, Response } from "express";
 import { MainController } from "../controllers/main.js";
 import { requireAuth } from "../middleware/auth.js";
 
 const mainRouter = Router();
+
 const mainController = new MainController();
 
 mainRouter.post(
@@ -13,8 +13,16 @@ mainRouter.post(
   mainController.review.bind(mainController),
 );
 
-mainRouter.get("/hello", (_request: Request, response: Response) => {
-  response.send("Yoo");
-});
+mainRouter.get(
+  "/reports",
+  requireAuth,
+  mainController.getReports.bind(mainController),
+);
+
+mainRouter.get(
+  "/reports/:reportId",
+  requireAuth,
+  mainController.getReport.bind(mainController),
+);
 
 export default mainRouter;
