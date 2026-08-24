@@ -10,6 +10,6 @@ authRouter.get("/google/callback", authController.googleCallback);
 
 authRouter.post("/verify", authController.verify);
 
-authRouter.get("/me");
+authRouter.get("/me", authController.me);
 
 export default authRouter;
