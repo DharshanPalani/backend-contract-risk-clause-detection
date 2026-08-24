@@ -33,7 +33,7 @@ app.use(passport.initialize());
 // Routes
 // --------------------------------------------------
 
-app.use("/api", mainRouter);
+// app.use("/api", mainRouter);
 app.use("/auth", authRouter);
 
 // --------------------------------------------------
