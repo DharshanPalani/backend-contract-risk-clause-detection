@@ -104,7 +104,6 @@ export class MainController {
       const reports = await this.mainService.getUserReports(userId);
 
       return response.status(200).json({
-        status: "good",
         reports,
       });
     } catch (error) {
