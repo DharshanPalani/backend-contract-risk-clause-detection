@@ -77,7 +77,7 @@ export class MainController {
       });
 
       return response.status(201).json({
-        status: "good",
+        // status: "good",
         report,
       });
     } catch (error) {
