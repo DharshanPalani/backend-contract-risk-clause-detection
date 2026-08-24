@@ -20,4 +20,8 @@ export class UserService {
 
     return this.userRepository.createGoogleUser(data);
   }
+
+  async findById(userId: number) {
+    return this.userRepository.findById(userId);
+  }
 }

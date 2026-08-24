@@ -7,6 +7,25 @@ export interface CreateGoogleUserData {
 }
 
 export class UserRepository {
+  async findById(userId: number) {
+    const result = await pool.query(
+      `
+    SELECT
+      user_id,
+      google_id,
+      email,
+      name,
+      created_at
+    FROM users
+    WHERE user_id = $1
+    LIMIT 1
+    `,
+      [userId],
+    );
+
+    return result.rows[0] ?? null;
+  }
+
   async findByGoogleId(googleId: string) {
     const result = await pool.query(
       `

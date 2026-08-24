@@ -2,10 +2,16 @@ import type { Request, Response, NextFunction } from "express";
 import passport from "passport";
 import { UserService } from "../services/user.js";
 import { OAuthService } from "../services/oauth.js";
+import { AuthService } from "../services/auth.js";
 
 export class AuthController {
   private userService = new UserService();
   private oauthService = new OAuthService();
+  private authService = new AuthService();
+
+  // --------------------------------------------------
+  // GET /auth/google
+  // --------------------------------------------------
 
   googleAuth = (request: Request, response: Response, next: NextFunction) => {
     passport.authenticate("google", {
@@ -13,6 +19,10 @@ export class AuthController {
       session: false,
     })(request, response, next);
   };
+
+  // --------------------------------------------------
+  // GET /auth/google/callback
+  // --------------------------------------------------
 
   googleCallback = (
     request: Request,
@@ -40,17 +50,20 @@ export class AuthController {
         }
 
         try {
+          // Find existing user or create a new one
           const dbUser = await this.userService.findOrCreateGoogleUser({
             googleId: user.googleId,
             email: user.email,
             name: user.name,
           });
 
+          // Create temporary one-time OAuth code
           const code = await this.oauthService.createAuthCode(dbUser.user_id);
 
           const frontendUrl =
             process.env.FRONTEND_URL ?? "http://localhost:5173";
 
+          // Redirect to frontend callback
           return response.redirect(
             `${frontendUrl}/callback?code=${encodeURIComponent(code)}`,
           );
@@ -66,6 +79,10 @@ export class AuthController {
     )(request, response, next);
   };
 
+  // --------------------------------------------------
+  // POST /auth/verify
+  // --------------------------------------------------
+
   verify = async (request: Request, response: Response) => {
     const { code } = request.body;
 
@@ -77,6 +94,7 @@ export class AuthController {
     }
 
     try {
+      // Verify and consume the temporary Redis code
       const userId = await this.oauthService.verifyAuthCode(code);
 
       if (!userId) {
@@ -86,10 +104,20 @@ export class AuthController {
         });
       }
 
-      // Temporary until JWT/session implementation
+      // Create JWT
+      const token = this.authService.createToken(userId);
+
+      // Store JWT in HTTP-only cookie
+      response.cookie("auth_token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        maxAge: 60 * 60 * 1000,
+        path: "/",
+      });
+
       return response.status(200).json({
         status: "good",
-        user_id: userId,
       });
     } catch (error) {
       console.error("OAuth verification error:", error);
@@ -97,6 +125,55 @@ export class AuthController {
       return response.status(500).json({
         status: "error",
         message: "Authentication verification failed",
+      });
+    }
+  };
+
+  // --------------------------------------------------
+  // GET /auth/me
+  // --------------------------------------------------
+
+  me = async (request: Request, response: Response) => {
+    try {
+      const token = request.cookies?.auth_token;
+
+      if (!token) {
+        return response.status(401).json({
+          status: "error",
+          message: "Not authenticated",
+        });
+      }
+
+      // Verify JWT
+      const userId = this.authService.verifyToken(token);
+
+      if (!userId) {
+        return response.status(401).json({
+          status: "error",
+          message: "Invalid or expired session",
+        });
+      }
+
+      // Get actual user from PostgreSQL
+      const user = await this.userService.findById(userId);
+
+      if (!user) {
+        return response.status(404).json({
+          status: "error",
+          message: "User not found",
+        });
+      }
+
+      return response.status(200).json({
+        status: "good",
+        user,
+      });
+    } catch (error) {
+      console.error("Auth me error:", error);
+
+      return response.status(500).json({
+        status: "error",
+        message: "Failed to retrieve authenticated user",
       });
     }
   };
