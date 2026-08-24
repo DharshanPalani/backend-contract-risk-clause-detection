@@ -1,5 +1,4 @@
 import { Router } from "express";
-
 import { MainController } from "../controllers/main.js";
 import { requireAuth } from "../middleware/auth.js";
 
@@ -7,7 +6,6 @@ const mainRouter = Router();
 
 const mainController = new MainController();
 
-// Review PDF
 mainRouter.post(
   "/review",
   requireAuth,
@@ -15,7 +13,6 @@ mainRouter.post(
   mainController.review.bind(mainController),
 );
 
-// Reports
 mainRouter.get(
   "/reports",
   requireAuth,

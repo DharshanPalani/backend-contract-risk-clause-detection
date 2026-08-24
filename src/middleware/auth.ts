@@ -3,15 +3,11 @@ import { AuthService } from "../services/auth.js";
 
 const authService = new AuthService();
 
-export interface AuthenticatedRequest extends Request {
-  userId?: number;
-}
-
-export const requireAuth = (
-  request: AuthenticatedRequest,
+export function requireAuth(
+  request: Request,
   response: Response,
   next: NextFunction,
-) => {
+) {
   try {
     const token = request.cookies?.auth_token;
 
@@ -31,7 +27,10 @@ export const requireAuth = (
       });
     }
 
-    request.userId = userId;
+    // Keep it as any as requested
+    (request as any).user = {
+      userId,
+    };
 
     next();
   } catch (error) {
@@ -42,4 +41,4 @@ export const requireAuth = (
       message: "Authentication failed",
     });
   }
-};
+}
