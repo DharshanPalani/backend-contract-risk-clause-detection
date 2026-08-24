@@ -1,4 +1,5 @@
 import { Router } from "express";
+
 import { MainController } from "../controllers/main.js";
 import { requireAuth } from "../middleware/auth.js";
 
@@ -6,6 +7,7 @@ const mainRouter = Router();
 
 const mainController = new MainController();
 
+// Review PDF
 mainRouter.post(
   "/review",
   requireAuth,
@@ -13,6 +15,7 @@ mainRouter.post(
   mainController.review.bind(mainController),
 );
 
+// Reports
 mainRouter.get(
   "/reports",
   requireAuth,
@@ -23,6 +26,24 @@ mainRouter.get(
   "/reports/:reportId",
   requireAuth,
   mainController.getReport.bind(mainController),
+);
+
+mainRouter.patch(
+  "/reports/:reportId/close",
+  requireAuth,
+  mainController.closeReport.bind(mainController),
+);
+
+mainRouter.patch(
+  "/reports/:reportId/restore",
+  requireAuth,
+  mainController.restoreReport.bind(mainController),
+);
+
+mainRouter.delete(
+  "/reports/:reportId",
+  requireAuth,
+  mainController.deleteReport.bind(mainController),
 );
 
 export default mainRouter;

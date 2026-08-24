@@ -1,23 +1,37 @@
 import { MainRepository } from "../repositories/main.js";
 
+export interface CreateReportData {
+  userId: number;
+  title: string;
+  startDate: string | null;
+  endDate: string | null;
+  reportContent: unknown;
+}
+
 export class MainService {
   private mainRepository = new MainRepository();
 
-  async createReport(data: {
-    userId: number;
-    title: string;
-    startDate: string | null;
-    endDate: string | null;
-    reportContent: object;
-  }) {
+  async createReport(data: CreateReportData) {
     return this.mainRepository.createReport(data);
   }
 
-  async getUserReports(userId: number) {
-    return this.mainRepository.findReportsByUserId(userId);
+  async getReports(userId: number) {
+    return this.mainRepository.getReportsByUser(userId);
   }
 
   async getReport(reportId: number, userId: number) {
-    return this.mainRepository.findReportById(reportId, userId);
+    return this.mainRepository.getReportById(reportId, userId);
+  }
+
+  async closeReport(reportId: number, userId: number) {
+    return this.mainRepository.closeReport(reportId, userId);
+  }
+
+  async restoreReport(reportId: number, userId: number) {
+    return this.mainRepository.restoreReport(reportId, userId);
+  }
+
+  async deleteReport(reportId: number, userId: number) {
+    return this.mainRepository.deleteReport(reportId, userId);
   }
 }

@@ -1,17 +1,19 @@
-import type { Response } from "express";
+import type { Request, Response } from "express";
 import multer from "multer";
+
 import { ExtractorService } from "../services/extractor.js";
 import { LLMService } from "../services/llm.js";
-import { template_data } from "../template_data.js";
 import { MainService } from "../services/main.js";
-import type { AuthenticatedRequest } from "../middleware/auth.js";
+import { template_data } from "../template_data.js";
 
 export class MainController {
   public upload = multer({
     storage: multer.memoryStorage(),
+
     limits: {
       fileSize: 10 * 1024 * 1024,
     },
+
     fileFilter: (_req, file, cb) => {
       if (file.mimetype === "application/pdf") {
         cb(null, true);
@@ -25,17 +27,11 @@ export class MainController {
   private llmService = new LLMService();
   private mainService = new MainService();
 
-  async review(request: AuthenticatedRequest, response: Response) {
-    // requireAuth middleware should have populated this
-    const userId = request.userId;
+  // ==========================================
+  // POST /api/review
+  // ==========================================
 
-    if (!userId) {
-      return response.status(401).json({
-        status: "error",
-        message: "Not authenticated",
-      });
-    }
-
+  async review(request: Request, response: Response) {
     const file = request.file;
 
     if (!file) {
@@ -46,6 +42,8 @@ export class MainController {
     }
 
     try {
+      const userId = (request.user as any).userId;
+
       const extracted = await this.extractorService.extractPDF(file.buffer);
 
       const contractText = extracted.pages
@@ -67,17 +65,20 @@ export class MainController {
 
       console.log("PARSED RESULT:", result);
 
-      // Save report for the authenticated user
       const report = await this.mainService.createReport({
         userId,
+
         title: result.title,
-        startDate: result.startDate,
-        endDate: result.endDate,
+
+        startDate: result.startDate ?? null,
+
+        endDate: result.endDate ?? null,
+
         reportContent: result.report,
       });
 
       return response.status(201).json({
-        // status: "good",
+        status: "good",
         report,
       });
     } catch (error) {
@@ -90,20 +91,18 @@ export class MainController {
     }
   }
 
-  async getReports(request: AuthenticatedRequest, response: Response) {
-    const userId = request.userId;
+  // ==========================================
+  // GET /api/reports
+  // ==========================================
 
-    if (!userId) {
-      return response.status(401).json({
-        status: "error",
-        message: "Not authenticated",
-      });
-    }
-
+  async getReports(request: Request, response: Response) {
     try {
-      const reports = await this.mainService.getUserReports(userId);
+      const userId = (request.user as any).userId;
+
+      const reports = await this.mainService.getReports(userId);
 
       return response.status(200).json({
+        status: "good",
         reports,
       });
     } catch (error) {
@@ -111,31 +110,28 @@ export class MainController {
 
       return response.status(500).json({
         status: "error",
-        message: "Failed to retrieve reports",
+        message: "Failed to get reports",
       });
     }
   }
 
-  async getReport(request: AuthenticatedRequest, response: Response) {
-    const userId = request.userId;
+  // ==========================================
+  // GET /api/reports/:reportId
+  // ==========================================
 
-    if (!userId) {
-      return response.status(401).json({
-        status: "error",
-        message: "Not authenticated",
-      });
-    }
-
-    const reportId = Number(request.params.reportId);
-
-    if (!Number.isInteger(reportId)) {
-      return response.status(400).json({
-        status: "error",
-        message: "Invalid report ID",
-      });
-    }
-
+  async getReport(request: Request, response: Response) {
     try {
+      const userId = (request.user as any).userId;
+
+      const reportId = Number(request.params.reportId);
+
+      if (!Number.isInteger(reportId)) {
+        return response.status(400).json({
+          status: "error",
+          message: "Invalid report ID",
+        });
+      }
+
       const report = await this.mainService.getReport(reportId, userId);
 
       if (!report) {
@@ -146,6 +142,7 @@ export class MainController {
       }
 
       return response.status(200).json({
+        status: "good",
         report,
       });
     } catch (error) {
@@ -153,7 +150,128 @@ export class MainController {
 
       return response.status(500).json({
         status: "error",
-        message: "Failed to retrieve report",
+        message: "Failed to get report",
+      });
+    }
+  }
+
+  // ==========================================
+  // PATCH /api/reports/:reportId/close
+  // ==========================================
+
+  async closeReport(request: Request, response: Response) {
+    try {
+      const userId = (request.user as any).userId;
+
+      const reportId = Number(request.params.reportId);
+
+      if (!Number.isInteger(reportId)) {
+        return response.status(400).json({
+          status: "error",
+          message: "Invalid report ID",
+        });
+      }
+
+      const report = await this.mainService.closeReport(reportId, userId);
+
+      if (!report) {
+        return response.status(404).json({
+          status: "error",
+          message: "Active report not found",
+        });
+      }
+
+      return response.status(200).json({
+        status: "good",
+        report,
+      });
+    } catch (error) {
+      console.error("Close report error:", error);
+
+      return response.status(500).json({
+        status: "error",
+        message: "Failed to close report",
+      });
+    }
+  }
+
+  // ==========================================
+  // PATCH /api/reports/:reportId/restore
+  // ==========================================
+
+  async restoreReport(request: Request, response: Response) {
+    try {
+      const userId = (request.user as any).userId;
+
+      const reportId = Number(request.params.reportId);
+
+      if (!Number.isInteger(reportId)) {
+        return response.status(400).json({
+          status: "error",
+          message: "Invalid report ID",
+        });
+      }
+
+      const report = await this.mainService.restoreReport(reportId, userId);
+
+      if (!report) {
+        return response.status(404).json({
+          status: "error",
+          message: "Closed report not found",
+        });
+      }
+
+      return response.status(200).json({
+        status: "good",
+        report,
+      });
+    } catch (error) {
+      console.error("Restore report error:", error);
+
+      return response.status(500).json({
+        status: "error",
+        message: "Failed to restore report",
+      });
+    }
+  }
+
+  // ==========================================
+  // DELETE /api/reports/:reportId
+  // ==========================================
+
+  async deleteReport(request: Request, response: Response) {
+    try {
+      const userId = (request.user as any).userId;
+
+      const reportId = Number(request.params.reportId);
+
+      if (!Number.isInteger(reportId)) {
+        return response.status(400).json({
+          status: "error",
+          message: "Invalid report ID",
+        });
+      }
+
+      const report = await this.mainService.deleteReport(reportId, userId);
+
+      if (!report) {
+        return response.status(404).json({
+          status: "error",
+          message: "Report not found",
+        });
+      }
+
+      return response.status(200).json({
+        status: "good",
+        message: "Report deleted",
+        report,
+      });
+    } catch (error) {
+      console.error("Delete report error:", error);
+
+      return response.status(500).json({
+        status: "error",
+        message: "Failed to delete report",
       });
     }
   }
