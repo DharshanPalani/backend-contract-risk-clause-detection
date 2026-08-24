@@ -67,4 +67,29 @@ export class AuthController {
       },
     )(request, response, next);
   };
+
+  async verify(request: Request, response: Response) {
+    const { code } = request.body;
+
+    if (!code || typeof code !== "string") {
+      return response.status(400).json({
+        status: "error",
+        message: "Code is required",
+      });
+    }
+
+    const userId = await this.oauthService.verifyAuthCode(code);
+
+    if (!userId) {
+      return response.status(401).json({
+        status: "error",
+        message: "Invalid or expired code",
+      });
+    }
+
+    return response.status(200).json({
+      status: "good",
+      user_id: userId,
+    });
+  }
 }

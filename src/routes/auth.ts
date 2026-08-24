@@ -8,4 +8,6 @@ authRouter.get("/google", authController.googleAuth);
 
 authRouter.get("/google/callback", authController.googleCallback);
 
+authRouter.post("/verify", authController.verify);
+
 export default authRouter;
