@@ -6,11 +6,17 @@ interface AuthPayload {
 
 export class AuthService {
   createToken(userId: number): string {
+    const secret = process.env.JWT_SECRET;
+
+    if (!secret) {
+      throw new Error("JWT_SECRET is not configured");
+    }
+
     return jwt.sign(
       {
         user_id: userId,
       },
-      process.env.JWT_SECRET!,
+      secret,
       {
         expiresIn: "1h",
       },
@@ -19,14 +25,21 @@ export class AuthService {
 
   verifyToken(token: string): number | null {
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as AuthPayload;
+      const secret = process.env.JWT_SECRET;
 
-      if (!decoded.user_id) {
+      if (!secret) {
+        throw new Error("JWT_SECRET is not configured");
+      }
+
+      const decoded = jwt.verify(token, secret) as AuthPayload;
+
+      if (!decoded.user_id || typeof decoded.user_id !== "number") {
         return null;
       }
 
       return decoded.user_id;
-    } catch {
+    } catch (error) {
+      console.error("JWT verification error:", error);
       return null;
     }
   }

@@ -1,35 +1,50 @@
 import type { Request, Response } from "express";
 import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
-
 import cookieParser from "cookie-parser";
 import passport from "passport";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 import mainRouter from "./routes/main.js";
 import authRouter from "./routes/auth.js";
 import "./auth/passportSetup.js";
 
-dotenv.config();
-
 const app = express();
 
-app.use(passport.initialize());
-app.use(cookieParser());
-app.use(express.json());
+// --------------------------------------------------
+// Middleware
+// --------------------------------------------------
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL ?? "http://localhost:5173",
     credentials: true,
   }),
 );
 
-app.use("/api", mainRouter);
+app.use(express.json());
+app.use(cookieParser());
 
+app.use(passport.initialize());
+
+// --------------------------------------------------
+// Routes
+// --------------------------------------------------
+
+app.use("/api", mainRouter);
 app.use("/auth", authRouter);
 
+// --------------------------------------------------
+// Health check
+// --------------------------------------------------
+
 app.get("/", (_request: Request, response: Response) => {
-  response.send("Hello son!! 67");
+  response.status(200).json({
+    status: "good",
+    message: "Backend is running",
+  });
 });
 
 export default app;
