@@ -47,6 +47,8 @@ export class MainController {
         USE_LLM === "false"
           ? template_data
           : await this.llmService.callLLM(contractText);
+
+      console.log("LLM RESULT:", JSON.stringify(result, null, 2));
       const userId = 1;
 
       const report = await this.mainService.createReport({
