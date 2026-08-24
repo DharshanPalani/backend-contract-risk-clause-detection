@@ -1,5 +1,3 @@
-import fs from "fs";
-
 export class LLMService {
   async callLLM(data: string) {
     const prompt = `
