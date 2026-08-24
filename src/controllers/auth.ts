@@ -3,17 +3,30 @@ import passport from "passport";
 
 export class AuthController {
   googleAuth = (request: Request, response: Response, next: NextFunction) => {
-    console.log("GOOGLE_CLIENT_ID exists:", !!process.env.GOOGLE_CLIENT_ID);
-    console.log(
-      "GOOGLE_CLIENT_SECRET exists:",
-      !!process.env.GOOGLE_CLIENT_SECRET,
-    );
-    console.log("CALLBACK_URL:", process.env.CALLBACK_URL);
+    try {
+      console.log("=== GOOGLE AUTH HIT ===");
 
-    passport.authenticate("google", {
-      scope: ["profile", "email"],
-      session: false,
-    })(request, response, next);
+      console.log("GOOGLE_CLIENT_ID exists:", !!process.env.GOOGLE_CLIENT_ID);
+
+      console.log(
+        "GOOGLE_CLIENT_SECRET exists:",
+        !!process.env.GOOGLE_CLIENT_SECRET,
+      );
+
+      console.log("CALLBACK_URL:", process.env.CALLBACK_URL);
+
+      return passport.authenticate("google", {
+        scope: ["profile", "email"],
+        session: false,
+      })(request, response, next);
+    } catch (error) {
+      console.error("=== GOOGLE AUTH ERROR ===", error);
+
+      return response.status(500).json({
+        status: "error",
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
   };
 
   googleCallback = (
@@ -21,7 +34,7 @@ export class AuthController {
     response: Response,
     next: NextFunction,
   ) => {
-    passport.authenticate(
+    return passport.authenticate(
       "google",
       { session: false },
       (err: any, user: any) => {
@@ -30,7 +43,7 @@ export class AuthController {
 
           return response.status(500).json({
             status: "error",
-            message: "Google authentication failed",
+            message: err instanceof Error ? err.message : String(err),
           });
         }
 
@@ -40,8 +53,6 @@ export class AuthController {
             message: "Google authentication failed",
           });
         }
-
-        console.log("Authenticated Google user:", user);
 
         return response.status(200).json({
           status: "good",
