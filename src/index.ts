@@ -1,14 +1,18 @@
 import express from "express";
-
 import dotenv from "dotenv";
-
+import cors from "cors";
 import type { Request, Response } from "express";
-
 import mainRouter from "./routes/main.js";
 
 dotenv.config();
 
 const app = express();
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  }),
+);
 
 app.use("/api", mainRouter);
 
