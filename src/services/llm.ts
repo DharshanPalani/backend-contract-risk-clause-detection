@@ -3,8 +3,13 @@ import { LLM_prompt } from "../prompt.js";
 export class LLMService {
   async callLLM(data: string) {
     const prompt = `
-    ${LLM_prompt}
-    ${data}
+${LLM_prompt}
+
+==================================================
+RAW CONTRACT
+==================================================
+
+${data}
 `;
 
     const response = await fetch("https://api.deepseek.com/chat/completions", {
@@ -31,8 +36,6 @@ export class LLMService {
           type: "disabled",
         },
 
-        // reasoning_effort: "high",
-
         stream: false,
       }),
     });
@@ -45,15 +48,19 @@ export class LLMService {
 
     const result: any = await response.json();
 
-    const content = result.choices[0].message.content;
+    const content = result.choices?.[0]?.message?.content;
 
-    // console.log(content);
-    // const formatted = JSON.stringify(JSON.parse(content), null, 4);
+    if (!content) {
+      throw new Error("DeepSeek returned empty content");
+    }
 
-    // fs.writeFile("data.json", formatted, "utf8", () => {
-    //   console.log("Data written");
-    // });
+    try {
+      return JSON.parse(content);
+    } catch (error) {
+      console.error("Failed to parse DeepSeek JSON:");
+      console.error(content);
 
-    return content;
+      throw new Error("DeepSeek returned invalid JSON");
+    }
   }
 }
