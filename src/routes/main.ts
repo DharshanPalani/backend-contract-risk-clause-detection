@@ -15,7 +15,7 @@ mainRouter.post(
 
 mainRouter.get(
   "/reports",
-  // requireAuth,
+  requireAuth,
   mainController.getReports.bind(mainController),
 );
 
