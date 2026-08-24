@@ -15,6 +15,7 @@ mainRouter.post(
 
 mainRouter.post(
   "/reports/:reportId/highlights",
+  requireAuth,
   mainController.generateHighlights.bind(mainController),
 );
 
