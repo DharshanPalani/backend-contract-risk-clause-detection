@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// import mainRouter from "./routes/main.js";
+import mainRouter from "./routes/main.js";
 import authRouter from "./routes/auth.js";
 import "./auth/passportSetup.js";
 
@@ -33,7 +33,7 @@ app.use(passport.initialize());
 // Routes
 // --------------------------------------------------
 
-// app.use("/api", mainRouter);
+app.use("/api", mainRouter);
 app.use("/auth", authRouter);
 
 // --------------------------------------------------
