@@ -1,7 +1,6 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
-console.log("CALLBACK_URL:", process.env.CALLBACK_URL);
 passport.use(
   new GoogleStrategy(
     {
@@ -11,11 +10,17 @@ passport.use(
     },
     async (_accessToken, _refreshToken, profile, done) => {
       try {
-        const email = profile.emails?.[0]?.value ?? "";
+        const email = profile.emails?.[0]?.value;
 
-        console.log("Google Email:", email);
+        if (!email) {
+          return done(new Error("Google account has no email"));
+        }
 
-        done(null, email);
+        done(null, {
+          googleId: profile.id,
+          email,
+          name: profile.displayName,
+        });
       } catch (error) {
         done(error);
       }
