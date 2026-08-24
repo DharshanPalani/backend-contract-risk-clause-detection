@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import multer from "multer";
 import { ExtractorService } from "../services/extractor.js";
-// import { LLMService } from "../services/llm.js";
+import { LLMService } from "../services/llm.js";
 
 export class MainController {
   public upload = multer({
