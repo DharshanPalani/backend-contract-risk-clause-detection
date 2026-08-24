@@ -1,4 +1,5 @@
-// import { PDFParse } from "pdf-parse";
+import { CanvasFactory } from "pdf-parse/worker";
+import { PDFParse } from "pdf-parse";
 
 export interface ExtractedPage {
   pageNumber: number;
@@ -12,10 +13,9 @@ export interface ExtractedPDF {
 
 export class ExtractorService {
   async extractPDF(buffer: Buffer): Promise<ExtractedPDF> {
-    const { PDFParse } = await import("pdf-parse");
-
     const parser = new PDFParse({
       data: buffer,
+      CanvasFactory,
     });
 
     try {
