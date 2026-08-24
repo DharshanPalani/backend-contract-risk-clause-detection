@@ -2,8 +2,8 @@ import type { Request, Response } from "express";
 import multer from "multer";
 import { ExtractorService } from "../services/extractor.js";
 import { LLMService } from "../services/llm.js";
-import { MainService } from "../services/main.js";
 import { template_data } from "../template_data.js";
+import { MainService } from "../services/main.js";
 
 export class MainController {
   public upload = multer({
@@ -43,20 +43,29 @@ export class MainController {
 
       const USE_LLM = process.env.DEV_MODE;
 
-      const result =
-        USE_LLM === "false"
-          ? template_data
-          : await this.llmService.callLLM(contractText);
+      let result: any;
 
-      console.log("LLM RESULT:", JSON.stringify(result, null, 2));
+      if (USE_LLM === "false") {
+        result = template_data;
+      } else {
+        const llmResult = await this.llmService.callLLM(contractText);
+
+        // LLM returns JSON as a string
+        result =
+          typeof llmResult === "string" ? JSON.parse(llmResult) : llmResult;
+      }
+
+      console.log("PARSED RESULT:", result);
+
+      // Hardcoded user ID for now
       const userId = 1;
 
       const report = await this.mainService.createReport({
         userId,
         title: result.title,
-        startDate: result.startDate ?? null,
-        endDate: result.endDate ?? null,
-        reportContent: result.report_content,
+        startDate: result.startDate,
+        endDate: result.endDate,
+        reportContent: result.report,
       });
 
       return response.status(201).json({
