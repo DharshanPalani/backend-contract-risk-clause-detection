@@ -8,6 +8,7 @@
     "build": "tsc && tsc-alias",
     "preview": "node dist/scripts/localDev.js",
     "generate": "tsx src/scripts/generate.ts",
+    "server": "node dist/scripts/localDev.js",
     "seed": "tsx src/scripts/seed.ts",
     "db:test": "tsx src/scripts/testDb.ts",
     "db:migrate": "tsx src/scripts/runMigration.ts"
@@ -26,6 +27,7 @@
     "path": "^0.12.7",
     "pdf-parse": "^2.4.5",
     "pg": "^8.22.0",
+    "tsc-alias": "^1.9.2",
     "tsx": "^4.23.10"
   },
   "devDependencies": {
