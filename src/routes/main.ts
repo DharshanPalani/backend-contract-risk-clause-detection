@@ -14,6 +14,12 @@ mainRouter.post(
 );
 
 mainRouter.post(
+  "/reports/compare",
+  requireAuth,
+  mainController.compareReports.bind(mainController),
+);
+
+mainRouter.post(
   "/reports/:reportId/highlights",
   requireAuth,
   mainController.generateHighlights.bind(mainController),

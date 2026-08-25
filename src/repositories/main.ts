@@ -48,6 +48,31 @@ export class MainRepository {
     return result.rows[0];
   }
 
+  async getReportsForComparison(
+    reportId1: number,
+    reportId2: number,
+    userId: number,
+  ) {
+    const result = await pool.query(
+      `
+    SELECT
+      report_id,
+      title,
+      report_content,
+      status,
+      created_at
+    FROM contract_reports
+    WHERE report_id = ANY($1)
+      AND user_id = $2
+      AND status != 'deleted'
+    ORDER BY report_id ASC
+    `,
+      [[reportId1, reportId2], userId],
+    );
+
+    return result.rows;
+  }
+
   // ==========================================
   // GET ALL REPORTS
   // ==========================================

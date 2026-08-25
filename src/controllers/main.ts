@@ -28,6 +28,60 @@ export class MainController {
   private mainService = new MainService();
 
   // ==========================================
+  // POST /api/reports/compare
+  // ==========================================
+
+  async compareReports(request: Request, response: Response) {
+    try {
+      const userId = (request.user as any).userId;
+
+      const { reportId1, reportId2 } = request.body;
+
+      const id1 = Number(reportId1);
+      const id2 = Number(reportId2);
+
+      if (!Number.isInteger(id1) || !Number.isInteger(id2)) {
+        return response.status(400).json({
+          status: "error",
+          message: "Both report IDs must be valid integers",
+        });
+      }
+
+      if (id1 === id2) {
+        return response.status(400).json({
+          status: "error",
+          message: "Cannot compare a report with itself",
+        });
+      }
+
+      const comparison = await this.mainService.compareReports(
+        id1,
+        id2,
+        userId,
+      );
+
+      if (!comparison) {
+        return response.status(404).json({
+          status: "error",
+          message: "One or both reports were not found",
+        });
+      }
+
+      return response.status(200).json({
+        status: "good",
+        comparison,
+      });
+    } catch (error) {
+      console.error("Compare reports error:", error);
+
+      return response.status(500).json({
+        status: "error",
+        message: "Failed to compare reports",
+      });
+    }
+  }
+
+  // ==========================================
   // POST /api/review
   // ==========================================
 

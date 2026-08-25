@@ -10,6 +10,7 @@ export interface CreateReportData {
 
   extractedData: {
     total_pages: number;
+
     pages: {
       pageNumber: number;
       content: string;
@@ -50,6 +51,82 @@ export class MainService {
     );
 
     return highlights;
+  }
+
+  // ==========================================
+  // COMPARE TWO REPORTS
+  // ==========================================
+
+  async compareReports(reportId1: number, reportId2: number, userId: number) {
+    if (reportId1 === reportId2) {
+      throw new Error("Cannot compare a report with itself");
+    }
+
+    const reports = await this.mainRepository.getReportsForComparison(
+      reportId1,
+      reportId2,
+      userId,
+    );
+
+    // One or both reports don't exist / don't belong
+    // to the authenticated user.
+    if (reports.length !== 2) {
+      return null;
+    }
+
+    const report1 = reports.find(
+      (report) => Number(report.report_id) === reportId1,
+    );
+
+    const report2 = reports.find(
+      (report) => Number(report.report_id) === reportId2,
+    );
+
+    if (!report1 || !report2) {
+      return null;
+    }
+
+    const reportContent1 =
+      typeof report1.report_content === "string"
+        ? JSON.parse(report1.report_content)
+        : report1.report_content;
+
+    const reportContent2 =
+      typeof report2.report_content === "string"
+        ? JSON.parse(report2.report_content)
+        : report2.report_content;
+
+    const comparison = await this.llmService.compareReports(
+      {
+        reportId: Number(report1.report_id),
+
+        title: report1.title,
+
+        analysis: reportContent1,
+      },
+
+      {
+        reportId: Number(report2.report_id),
+
+        title: report2.title,
+
+        analysis: reportContent2,
+      },
+    );
+
+    return {
+      document1: {
+        reportId: Number(report1.report_id),
+        title: report1.title,
+      },
+
+      document2: {
+        reportId: Number(report2.report_id),
+        title: report2.title,
+      },
+
+      comparison,
+    };
   }
 
   // ==========================================
