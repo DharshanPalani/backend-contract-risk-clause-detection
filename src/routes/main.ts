@@ -43,6 +43,12 @@ mainRouter.patch(
   mainController.closeReport.bind(mainController),
 );
 
+mainRouter.post(
+  "/reports/:reportId/question",
+  requireAuth,
+  mainController.askReportQuestion.bind(mainController),
+);
+
 mainRouter.patch(
   "/reports/:reportId/restore",
   requireAuth,
