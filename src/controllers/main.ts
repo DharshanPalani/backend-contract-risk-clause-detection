@@ -28,6 +28,59 @@ export class MainController {
   private mainService = new MainService();
 
   // ==========================================
+  // POST /api/reports/:reportId/question
+  // ==========================================
+
+  async askReportQuestion(request: Request, response: Response) {
+    try {
+      const userId = (request.user as any).userId;
+
+      const reportId = Number(request.params.reportId);
+
+      if (!Number.isInteger(reportId)) {
+        return response.status(400).json({
+          status: "error",
+          message: "Invalid report ID",
+        });
+      }
+
+      const { question } = request.body;
+
+      if (typeof question !== "string" || question.trim().length === 0) {
+        return response.status(400).json({
+          status: "error",
+          message: "Question is required",
+        });
+      }
+
+      const result = await this.mainService.answerReportQuestion(
+        reportId,
+        userId,
+        question.trim(),
+      );
+
+      if (!result) {
+        return response.status(404).json({
+          status: "error",
+          message: "Report not found",
+        });
+      }
+
+      return response.status(200).json({
+        status: "good",
+        ...result,
+      });
+    } catch (error) {
+      console.error("Ask report question error:", error);
+
+      return response.status(500).json({
+        status: "error",
+        message: "Failed to answer question",
+      });
+    }
+  }
+
+  // ==========================================
   // POST /api/reports/compare
   // ==========================================
 

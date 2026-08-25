@@ -176,4 +176,37 @@ export class MainService {
   async deleteReport(reportId: number, userId: number) {
     return this.mainRepository.deleteReport(reportId, userId);
   }
+
+  async answerReportQuestion(
+    reportId: number,
+    userId: number,
+    question: string,
+  ) {
+    const report = await this.mainRepository.getReportById(reportId, userId);
+
+    if (!report) {
+      return null;
+    }
+
+    if (!report.report_content) {
+      throw new Error("No report analysis available");
+    }
+
+    const analysis =
+      typeof report.report_content === "string"
+        ? JSON.parse(report.report_content)
+        : report.report_content;
+
+    const answer = await this.llmService.answerReportQuestion(question, {
+      title: report.title,
+      analysis,
+    });
+
+    return {
+      reportId: report.report_id,
+      title: report.title,
+      question,
+      answer,
+    };
+  }
 }

@@ -264,4 +264,63 @@ Return JSON only.
 
     return result;
   }
+
+  async answerReportQuestion(
+    question: string,
+    report: {
+      title: string;
+      analysis: any;
+    },
+  ) {
+    const prompt = `
+You are a contract analysis assistant.
+
+Answer the user's question using ONLY the supplied contract analysis.
+
+Do not invent clauses, facts, dates, obligations, or risks that are not present
+in the supplied analysis.
+
+If the answer cannot be determined from the analysis, clearly say that the
+available contract analysis does not contain enough information.
+
+Give a clear, natural-language answer suitable for a user who wants to
+understand their contract.
+
+Contract title:
+${report.title}
+
+Contract analysis:
+${JSON.stringify(report.analysis, null, 2)}
+
+User question:
+${question}
+
+Return ONLY valid JSON using this exact structure:
+
+{
+  "answer": "Clear natural-language answer to the user's question.",
+  "confidence": "high" | "medium" | "low",
+  "relevant_categories": [
+    "category name"
+  ]
+}
+
+Rules:
+
+- Answer the actual question directly.
+- Do not repeat the entire contract analysis.
+- Do not invent information.
+- If the question asks whether something is allowed, explain what the
+  contract analysis says about it.
+- If there is ambiguity, explicitly mention it.
+- Keep the answer concise but useful.
+- Return JSON only.
+`;
+
+    const result = await this.callLLM(prompt);
+
+    const parsed = typeof result === "string" ? JSON.parse(result) : result;
+
+    return parsed;
+  }
 }
